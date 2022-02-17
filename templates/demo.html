@@ -1,0 +1,174 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demo</title>
+
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/css/bootstrap.min.css" integrity="sha384-zCbKRCUGaJDkqS1kPbPd7TveP5iyJE0EjAuZQTgFLD2ylzuqKfdKlfG/eSrtxUkn" crossorigin="anonymous">
+    <!-- <link rel="stylesheet" href="demo.css"> -->
+
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js" integrity="sha256-/xUj+3OJU5yExlq6GSYGSHk7tPXikynS7ogEvDej/m4=" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.6.1/dist/js/bootstrap.bundle.min.js" integrity="sha384-fQybjgWLrvvRgtW6bFlB7jaZrFsaBXjsOMm/tB9LTS58ONXgqbR9W8oWht/amnpF" crossorigin="anonymous"></script>
+</head>
+
+<style>
+    body {
+    background-color: #1d1d1d;    
+}
+
+.mk {
+    border: 1px solid black;
+}
+
+.container {
+    margin-top: 2rem;
+    background-color: #d6d6d6;
+}
+
+.header-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.header {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.5rem;
+}
+
+.circle-image-wrapper {
+    width: auto;
+    height: 4rem;
+    display: flex;
+}
+
+.img-tn {
+    width: 4rem;
+    height: 4rem;
+    border: 2px solid black;
+    border-radius: 25%;
+    margin-right: 1rem;
+    cursor: pointer;
+}
+
+.image-wrapper {
+    padding: 1rem;
+    padding-top: 0.5rem;
+    display: flex;
+    justify-content: center;
+    height: 30rem;
+}
+
+.image {
+    width: 95%;
+    height: auto;
+    background-color: rgba(17, 17, 17, 0.933);
+}
+
+.options {
+    display: flex;
+    justify-content: center;
+}
+
+.opt {
+    margin: 0.5rem;
+}
+</style>
+
+<body>
+    <div class="container">
+        <div class="row">
+            <div class="col ">
+                <div class="header">
+                    <div class="header-wrapper">
+                        <h5>Project Demo - group 18</h5>
+                    </div>
+
+                    <div id="options-main" class="options">
+                        <button class="btn btn-light opt mk active" value_="1">BBOX</button>
+                        <button class="btn btn-light opt mk" value_="2">Mask</button>
+                        <button class="btn btn-light opt mk" value_="3">Inpainting</button>
+                    </div>
+    
+                    <div class="selection">
+                        <div id="thumb" class="circle-image-wrapper">
+                            <img class="img-tn" src="tn.jpg" value_="0" alt="thumbnail 1">
+                            <img class="img-tn" src="tn.jpg" value_="1" alt="thumbnail 1">
+                            <img class="img-tn" src="tn.jpg" value_="2" alt="thumbnail 1">
+                            <img class="img-tn" src="tn.jpg" value_="3" alt="thumbnail 1">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col">
+                <div class="image-wrapper">
+                    <img class="image mk" height="360" width="1280" src="http://localhost:5000/video_feed" alt="">
+                </div>
+            </div>
+        </div>
+    </div>
+<script type="text/javascript">(function(){window['__CF$cv$params']={r:'6deee8ccabbb2e28',m:'aKatkjJLq1jMbHxrURpuJk.2_30clekORpwa2VVGYyY-1645099794-0-AeXxgrHzAYGfm5HI2j5IEXpqDM4hrS5gzpfWPMx8e+Em8giaTxiL0k1b/rW80Nka6rBauimRI1mIywa56oTqVkOIBNwizDwR4qFo0+KTPru0SIhDjWxBVrIZkyl08IDR9AfXckowsgwdGvk5xFMACAkfnWP7iienumP/PKd95TkgEKhORRuRt2P0C7TTAtlWAw==',s:[0xca397b439b,0xee20b3b4dd],}})();</script></body>
+
+<!-- <script src="demo.js"></script> -->
+
+<script>
+    var options = document.getElementById("options-main")
+
+var selected_option = 1
+var selected_video = 0
+
+function getChildren(n, skipMe){
+    var r = [];
+    for ( ; n; n = n.nextSibling ) 
+       if ( n.nodeType == 1 && n != skipMe)
+          r.push( n );        
+    return r;
+};
+
+function getSiblings(n) {
+    return getChildren(n.parentNode.firstChild, n);
+}
+
+Array.from(options.children).forEach(el => {
+    el.addEventListener('click', ev => {
+        var siblings = getSiblings(el)
+        el.classList.add('active')
+
+        selected_option = Number(el.getAttribute('value_'))
+        Array.from(siblings).forEach(e => {
+            e.classList.remove('active')
+        })
+
+        send_data('http://localhost:5000/config', {'scene': selected_video, 'cache': selected_option}, res => console.log(res))
+    })
+})
+
+var thumbnail = document.getElementById("thumb")
+
+function send_data(where, data, success) {
+    $.ajax({
+        type: "POST",
+        url: where,
+        data: JSON.stringify(data),
+        contentType: "application/json;charset=utf-8;",
+        dataType: 'json',
+        success: res => success(res),
+        failure: err => console.error(err)
+    })
+}
+
+Array.from(thumbnail.children).forEach(el => {
+    el.addEventListener('click', ev => {
+        selected_video = Number(el.getAttribute('value_'))
+
+        send_data('http://localhost:5000/config', {'scene': selected_video, 'cache': selected_option}, res => console.log(res))
+    })
+})
+</script>
+
+</html>
